@@ -1,6 +1,5 @@
 from __future__ import print_function, division
 import setGPU
-#from keras.datasets import mnist
 import h5py
 
 from keras.layers import Input, Dense, Reshape, Flatten, Dropout
@@ -68,6 +67,9 @@ class WGAN():
         self.tag = "trial3_bs_128"
         self.img_shape = (16, 16, 55, 1)
         self.latent_dim = 100
+        
+        # Whether you want to use a validation set
+        self.validate = True
 
         # Following parameter and optimizer set as recommended in paper
         self.n_critic = 5
@@ -80,7 +82,7 @@ class WGAN():
             optimizer=optimizer,
             metrics=['accuracy'])
         #self.critic.to_json()
-        saveModel(self.critic, "weights/discriminator_model" + self.tag)
+        saveModel(self.critic, "weights/discriminator_model_" + self.tag)
 
         # Build the generator
         self.generator = self.build_generator()
@@ -187,19 +189,20 @@ class WGAN():
 
         # Load the training dataset
         f = h5py.File('/bigdata/shared/HGCAL_data/new/all_noPU.h5', 'r')
-        X_train = f['X']
+        X = f['X']
 
         # Rescale train -1 to 1
-        X_train = (X_train - np.mean(X_train))/np.mean(X_train)
+        X_train = (X - np.mean(X))/np.mean(X)
         f.close()
 
         # Load validation data
-        #g = h5py.File('/bigdata/shared/HGCAL_data/new_multi_small/no_pu/ntuple_merged_159_no_pu.h5', 'r')
-        #X_val = g['X']
+        if (self.validate):
+            g = h5py.File('/bigdata/shared/HGCAL_data/new_multi_small/no_pu/ntuple_merged_159_no_pu.h5', 'r')
+            val = g['X']
         
-        # Rescale val -1 to 1
-        #X_val = (X_val - np.mean(X_val))/np.mean(X_val)
-        #g.close()
+            # Rescale val -1 to 1
+            X_val = (val - np.mean(val))/np.mean(val)
+            g.close()
         
         # Adversarial ground truths
         valid = -np.ones((batch_size, 1))
@@ -228,8 +231,9 @@ class WGAN():
                 imgs = X_train[idx]
                 
                 # Select a random batch of images to VALIDATE
-                #idx_val = np.random.randint(0, X_val.shape[0], batch_size)
-                #imgs_val = X_val[idx_val]
+                if (self.validate):
+                    idx_val = np.random.randint(0, X_val.shape[0], batch_size)
+                    imgs_val = X_val[idx_val]
                 
                 # Sample noise as generator input
                 noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
@@ -243,9 +247,10 @@ class WGAN():
                 d_loss = 0.5 * np.add(d_loss_fake, d_loss_real)
                 
                 # Validation critic
-                #val_d_loss_real = self.critic.test_on_batch(imgs_val, valid)
-                #val_d_loss_fake = self.critic.test_on_batch(gen_imgs, fake)
-                #val_d_loss = 0.5 * np.add(val_d_loss_fake, val_d_loss_real)
+                if (self.validate):
+                    val_d_loss_real = self.critic.test_on_batch(imgs_val, valid)
+                    val_d_loss_fake = self.critic.test_on_batch(gen_imgs, fake)
+                    val_d_loss = 0.5 * np.add(val_d_loss_fake, val_d_loss_real)
 
                 # Clip critic weights
                 for l in self.critic.layers:
@@ -257,9 +262,10 @@ class WGAN():
                 d_loss_fakes.append(d_loss_fake)
                 d_losses.append(d_loss)
                 
-                #val_d_loss_reals.append(val_d_loss_real)
-                #val_d_loss_fakes.append(val_d_loss_fake)
-                #val_d_losses.append(val_d_loss)
+                if (self.validate):
+                    val_d_loss_reals.append(val_d_loss_real)
+                    val_d_loss_fakes.append(val_d_loss_fake)
+                    val_d_losses.append(val_d_loss)
             # ---------------------
             #  Train Generator
             # ---------------------
@@ -285,15 +291,20 @@ class WGAN():
                 self.combined.save_weights("weights/combined_weights_epoch_%d_%s.h5" % (epoch, self.tag))
             
                 # Plot histograms
+                inp_sum = np.sum(X[0:batch_size], axis = (1, 2, 3))
+                #inp_sum = np.sum(val[0:batch_size], axis = (1, 2, 3))
                 gen_sum = np.sum(gen_imgs, axis = (1, 2, 3))
-                inp_sum = np.sum(X_train[0:batch_size], axis = (1, 2, 3))
-                #print(gen_sum[:,0].shape)
                 #print(inp_sum[:,0].shape)
+                #print(gen_sum[:,0].shape)
                 plotPred(inp_sum[:,0], gen_sum[:,0], epoch)
 
             #self.sums(epoch)
+            
+        # Save losses in an HDF5 file:
         saveLosses(self.tag, d_loss_reals, d_loss_fakes, d_losses, g_losses) # TO EDIT, ADD VALIDATION
-        #saveLosses("val_"+self.tag, val_d_loss_reals, val_d_loss_fakes, val_d_losses, g_losses)
+        
+        if (self.validate):
+            saveLosses("val_"+self.tag, val_d_loss_reals, val_d_loss_fakes, val_d_losses, g_losses)
         
               
         
