@@ -39,9 +39,9 @@ def plotPred(real_sum, generated_sum, epoch):
     ax = fig.add_subplot(111)
     ax.hist(real_sum, alpha=0.3, bins=7, label='real sum', color='blue')
     ax.hist(generated_sum, alpha=0.3, bins=7, label='generated sum', color='red')
-    plt.legend()
-    ax.set_xlabel('Energy (GeV)')
-    ax.set_ylabel('n events')
+    plt.legend(prop={'size': 15})
+    ax.set_xlabel('Energy (GeV)', size=16)
+    ax.set_ylabel('n samples', size=16)
     #plt.show()
     plt.savefig('images/pred_%s.png'%epoch)
     
@@ -291,12 +291,12 @@ class WGAN():
                 self.combined.save_weights("weights/combined_weights_epoch_%d_%s.h5" % (epoch, self.tag))
             
                 # Plot histograms
-                inp_sum = np.sum(X[0:batch_size], axis = (1, 2, 3))
+                #inp_sum = np.sum(X[0:batch_size], axis = (1, 2, 3))
                 #inp_sum = np.sum(val[0:batch_size], axis = (1, 2, 3))
-                gen_sum = np.sum(gen_imgs, axis = (1, 2, 3))
+                #gen_sum = np.sum(gen_imgs, axis = (1, 2, 3))
                 #print(inp_sum[:,0].shape)
                 #print(gen_sum[:,0].shape)
-                plotPred(inp_sum[:,0], gen_sum[:,0], epoch)
+                #plotPred(inp_sum[:,0], gen_sum[:,0], epoch)
 
             #self.sums(epoch)
             
@@ -306,19 +306,6 @@ class WGAN():
         if (self.validate):
             saveLosses("val_"+self.tag, val_d_loss_reals, val_d_loss_fakes, val_d_losses, g_losses)
         
-              
-        
-#     def sums(self, epoch):
-#         noise = np.random.normal(0, 1, (2000, self.latent_dim))
-#         gen_imgs = self.generator.predict(noise)
-        
-#         #print(gen_imgs.shape)
-#         #print(gen_imgs[0])
-#         gsum = np.sum(gen_imgs[0], axis=(1, 2, 3))
-
-#         fig = plt.figure(epoch)
-#         plt.hist(gsum, bins=20)
-#         fig.savefig("images/histogram_%d_%s.png" % (epoch, self.tag))
                 
     def sample_images(self, epoch):
         r, c = 5, 5
