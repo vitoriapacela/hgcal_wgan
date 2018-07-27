@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=mpi_learn
+#SBATCH --job-name=wgan
 #SBATCH -c 2
 #SBATCH --gres=gpu:1 
 #SBATCH -p gpu --exclude=workergpu[00-07] # use only V100
