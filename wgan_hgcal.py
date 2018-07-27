@@ -64,7 +64,7 @@ class WGAN():
         #self.img_cols = 28
         #self.channels = 1
         #self.img_shape = (self.img_rows, self.img_cols, self.channels)
-        self.tag = "trial3_bs_128"
+        self.tag = "bs_128_lr_0.00005_latent_100_ncritic_5_clip_0.01_shuffle"
         self.img_shape = (16, 16, 55, 1)
         self.latent_dim = 100
         
@@ -87,7 +87,7 @@ class WGAN():
         # Build the generator
         self.generator = self.build_generator()
         #self.generator.to_json()
-        saveModel(self.generator, "weights/generator_model" + self.tag)
+        saveModel(self.generator, "weights/generator_model_" + self.tag)
         
         # The generator takes noise as input and generated imgs
         z = Input(shape=(100,))
@@ -105,7 +105,7 @@ class WGAN():
             optimizer=optimizer,
             metrics=['accuracy'])
         #self.combined.to_json()
-        saveModel(self.combined, "weights/combined_model" + self.tag)
+        saveModel(self.combined, "weights/combined_model_" + self.tag)
 
     def wasserstein_loss(self, y_true, y_pred):
         return K.mean(y_true * y_pred)
@@ -188,20 +188,28 @@ class WGAN():
     def train(self, epochs, batch_size=128, sample_interval=50):
 
         # Load the training dataset
-        f = h5py.File('/bigdata/shared/HGCAL_data/new/all_noPU.h5', 'r')
+        #f = h5py.File('/bigdata/shared/HGCAL_data/new/all_noPU.h5', 'r')
+        f = h5py.File('/mnt/ceph/users/vbarinpa/all_noPU.h5', 'r')
         X = f['X']
 
         # Rescale train -1 to 1
         X_train = (X - np.mean(X))/np.mean(X)
+
+        # Shuffle
+        np.random.shuffle(X_train)
         f.close()
 
         # Load validation data
         if (self.validate):
-            g = h5py.File('/bigdata/shared/HGCAL_data/new_multi_small/no_pu/ntuple_merged_159_no_pu.h5', 'r')
+            #g = h5py.File('/bigdata/shared/HGCAL_data/new_multi_small/no_pu/ntuple_merged_159_no_pu.h5', 'r')
+            g = h5py.File('/mnt/ceph/users/vbarinpa/multi_3d/no_pu/ntuple_merged_998_no_pu.h5', 'r')
             val = g['X']
         
             # Rescale val -1 to 1
             X_val = (val - np.mean(val))/np.mean(val)
+
+            # Shuffle
+            np.random.shuffle(X_val)
             g.close()
         
         # Adversarial ground truths
@@ -334,4 +342,4 @@ if __name__ == '__main__':
         os.makedirs(os.getcwd()+"/images/")
         
     wgan = WGAN()
-    wgan.train(epochs=2000, batch_size=128, sample_interval=50)
+    wgan.train(epochs=1000, batch_size=128, sample_interval=50)
