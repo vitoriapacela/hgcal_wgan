@@ -64,7 +64,7 @@ class WGAN():
         self.img_cols = 16
         self.channels = 55
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
-        self.tag = "bs_128_lr_0.00005_latent_100_ncritic_5_clip_0.01_tanh_noRescale"
+        self.tag = "bs_128_lr_0.00005_latent_100_ncritic_5_clip_0.01"
         #self.img_shape = (16, 16, 55)
         self.latent_dim = 100
         
@@ -211,7 +211,6 @@ class WGAN():
             g = h5py.File('/mnt/ceph/users/vbarinpa/multi_3d/no_pu/ntuple_merged_998_no_pu.h5', 'r')
             X_val = np.asarray(g['X'])
             X_val = X_val[:, :, :, :, 0]
-
             # Rescale val -1 to 1
             #X_val = (val - np.mean(val))/np.mean(val)
 
