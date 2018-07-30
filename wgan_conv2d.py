@@ -2,10 +2,10 @@ from __future__ import print_function, division
 import setGPU
 import h5py
 
-from keras.layers import Input, Dense, Reshape, Flatten, Dropout
-from keras.layers import BatchNormalization, Activation, ZeroPadding3D, Conv3D, UpSampling3D, AveragePooling3D
+from keras.layers import Input, Dense, Reshape, Flatten, Dropout, LeakyReLU
+from keras.layers.convolutional import UpSampling2D, Conv2D, ZeroPadding2D, AveragePooling2D
+from keras.layers import BatchNormalization, Activation
 from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model
 from keras.optimizers import RMSprop
 
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 import os
-
+import time
 
 def saveModel(model, name="regression"):
     '''
@@ -60,12 +60,12 @@ def saveLosses(name, discr_real, discr_fake, discr, gen):
 
 class WGAN():
     def __init__(self):
-        #self.img_rows = 28
-        #self.img_cols = 28
-        #self.channels = 1
-        #self.img_shape = (self.img_rows, self.img_cols, self.channels)
-        self.tag = "bs_128_lr_0.00005_latent_100_ncritic_5_clip_0.01"
-        self.img_shape = (16, 16, 55)
+        self.img_rows = 16
+        self.img_cols = 16
+        self.channels = 55
+        self.img_shape = (self.img_rows, self.img_cols, self.channels)
+        self.tag = "bs_128_lr_0.00005_latent_100_ncritic_5_clip_0.01_tanh_noRescale"
+        #self.img_shape = (16, 16, 55)
         self.latent_dim = 100
         
         # Whether you want to use a validation set
@@ -134,9 +134,9 @@ class WGAN():
 
         model.add(ZeroPadding2D(padding=(1, 1)))
 
-        model.add(Conv2D(filters=channels, kernel_size=(3, 3), padding='valid'))  
+        model.add(Conv2D(filters=self.channels, kernel_size=(3, 3), padding='valid'))  
 
-        model.add(Activation("relu"))
+        model.add(Activation('relu'))
 
         model.summary()
 
@@ -195,26 +195,28 @@ class WGAN():
         # Load the training dataset
         #f = h5py.File('/bigdata/shared/HGCAL_data/new/all_noPU.h5', 'r')
         f = h5py.File('/mnt/ceph/users/vbarinpa/all_noPU.h5', 'r')
-        X = f['X']
+        X_train = np.asarray(f['X'])
+        X_train = X_train[:, :, :, :, 0]
 
         # Rescale train -1 to 1
-        X_train = (X - np.mean(X))/np.mean(X)
+        #X_train = (X - np.mean(X))/np.mean(X)
 
         # Shuffle
-        #np.random.shuffle(X_train)
+        np.random.shuffle(X_train)
         f.close()
 
         # Load validation data
         if (self.validate):
             #g = h5py.File('/bigdata/shared/HGCAL_data/new_multi_small/no_pu/ntuple_merged_159_no_pu.h5', 'r')
             g = h5py.File('/mnt/ceph/users/vbarinpa/multi_3d/no_pu/ntuple_merged_998_no_pu.h5', 'r')
-            val = g['X']
-        
+            X_val = np.asarray(g['X'])
+            X_val = X_val[:, :, :, :, 0]
+
             # Rescale val -1 to 1
-            X_val = (val - np.mean(val))/np.mean(val)
+            #X_val = (val - np.mean(val))/np.mean(val)
 
             # Shuffle
-            #np.random.shuffle(X_val)
+            np.random.shuffle(X_val)
             g.close()
         
         # Adversarial ground truths
@@ -289,9 +291,7 @@ class WGAN():
             
             g_losses.append(g_loss)
             
-            # Plot the progress
-            #print(len(d_loss))
-            #print(len(g_loss))
+            # Print the progress
             print ("%d [D loss: %f] [G loss: %f]" % (epoch, 1 - d_loss[0], 1 - g_loss[0]))
 
             # If at save interval => save generated image samples and weights
@@ -332,7 +332,7 @@ class WGAN():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt, :, :, 25, 0], cmap='gray')
+                axs[i,j].imshow(gen_imgs[cnt, :, :, 25], cmap='gray')
                 axs[i,j].axis('off')
                 cnt += 1
         fig.savefig("images/hgcal_%d.png" % epoch)
@@ -340,6 +340,8 @@ class WGAN():
 
 
 if __name__ == '__main__':
+    start = time.mktime(time.gmtime())
+
     if not os.path.exists(os.getcwd()+"/weights/"):
         os.makedirs(os.getcwd()+"/weights/")
     
@@ -348,3 +350,6 @@ if __name__ == '__main__':
         
     wgan = WGAN()
     wgan.train(epochs=1000, batch_size=128, sample_interval=50)
+
+    stop = time.mktime(time.gmtime())
+    print("train_time " + str(stop - start))
