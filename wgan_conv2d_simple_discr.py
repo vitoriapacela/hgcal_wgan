@@ -286,17 +286,7 @@ class WGAN():
                 self.generator.save_weights("weights/generator_weights_epoch_%d_%s.h5" % (epoch, self.tag))
                 self.critic.save_weights("weights/discriminator_weights_epoch_%d_%s.h5" % (epoch, self.tag))
                 self.combined.save_weights("weights/combined_weights_epoch_%d_%s.h5" % (epoch, self.tag))
-            
-                # Plot histograms
-                #inp_sum = np.sum(X[0:batch_size], axis = (1, 2, 3))
-                #inp_sum = np.sum(val[0:batch_size], axis = (1, 2, 3))
-                #gen_sum = np.sum(gen_imgs, axis = (1, 2, 3))
-                #print(inp_sum[:,0].shape)
-                #print(gen_sum[:,0].shape)
-                #plotPred(inp_sum[:,0], gen_sum[:,0], epoch)
-
-            #self.sums(epoch)
-            
+                       
         # Save losses in an HDF5 file:
         saveLosses(self.tag, d_loss_reals, d_loss_fakes, d_losses, g_losses) # TO EDIT, ADD VALIDATION
         
