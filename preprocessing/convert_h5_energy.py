@@ -3,6 +3,7 @@ from binner_energy import process
 import glob
 import h5py
 import numpy as np
+import os
 
 
 def convert(f1):
@@ -15,28 +16,34 @@ def convert(f1):
     '''
     
     branches = ['isGamma', 'isElectron', 'isMuon', 'isPionCharged', 'true_energy',
-            'rechit_energy', 'rechit_phi', 'rechit_eta','rechit_layer', 'seed_eta', 'seed_phi', 'npu'
+            'rechit_energy', 'rechit_phi', 'rechit_eta','rechit_layer', 'seed_eta', 'seed_phi', 'npu', 'true_ncloseparticles'
            ]
 
     A = root_numpy.root2array(f1, treename='deepntuplizer/tree', branches=branches)
 
-    isElectron = np.where(A['isElectron'])
+    #isElectron = np.where( (A['isElectron']) and (A['true_ncloseparticles']==0) )
     
-    # N rechits per event
-    rechit_energy = A['rechit_energy'][isElectron]  # N energy
-    rechit_eta = A['rechit_eta'][isElectron]
-    rechit_phi = A['rechit_phi'][isElectron]
-    rechit_layer = A['rechit_layer'][isElectron]
+    isElectro = np.where(A['isElectron'])
 
-    seed_eta = A['seed_eta'][isElectron]  # scalar eta of the seed
-    seed_phi = A['seed_phi'][isElectron]  # scalar phi of the seed
+    A = A[isElectro]
+
+    ind = np.where(A['true_ncloseparticles']==0)
+
+    # N rechits per event
+    rechit_energy = A['rechit_energy'][ind]  # N energy
+    rechit_eta = A['rechit_eta'][ind]
+    rechit_phi = A['rechit_phi'][ind]
+    rechit_layer = A['rechit_layer'][ind]
+
+    seed_eta = A['seed_eta'][ind]  # scalar eta of the seed
+    seed_phi = A['seed_phi'][ind]  # scalar phi of the seed
 
     ## other data:
-    true_energy = A['true_energy'][isElectron]
-    pu = A['npu'][isElectron]
+    true_energy = A['true_energy'][ind]
+    pu = A['npu'][ind]
     
     
-    num_entries = len(isElectron[0])
+    num_entries = len(ind[0])
     print("Number of entries is ", num_entries)
 
     pics = []
@@ -91,4 +98,9 @@ def main():
 
 
 if __name__ == "__main__":
+    if not os.path.exists(os.getcwd()+"/PU/"):
+        os.makedirs(os.getcwd()+"/PU/")
+
+    if not os.path.exists(os.getcwd()+"/noPU/"):
+        os.makedirs(os.getcwd()+"/noPU/")
     main()
