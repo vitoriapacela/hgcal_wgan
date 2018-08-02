@@ -69,7 +69,7 @@ class WGAN():
         self.latent_dim = 100
         
         # Whether you want to use a validation set
-        self.validate = True
+        self.validate = False
 
         # Following parameter and optimizer set as recommended in paper
         self.n_critic = 5
@@ -348,7 +348,7 @@ if __name__ == '__main__':
         os.makedirs(os.getcwd()+"/images/")
         
     wgan = WGAN()
-    wgan.train(epochs=1000, batch_size=128, sample_interval=50)
+    wgan.train(epochs=2000, batch_size=128, sample_interval=25)
 
     stop = time.mktime(time.gmtime())
     print("train_time " + str(stop - start))
