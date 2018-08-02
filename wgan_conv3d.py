@@ -114,9 +114,9 @@ class WGAN():
 
         model = Sequential()
 
-        model.add(Dense(128 * 8 * 8, activation="relu", input_dim=self.latent_dim))
+        model.add(Dense(128 * 8 * 8 * 8, activation="relu", input_dim=self.latent_dim))
 
-        model.add(Reshape((8, 8, 128)))
+        model.add(Reshape((8, 8, 8, 128)))
 
         model.add(Conv3D(filters=128, kernel_size=(6, 6, 8), padding='same'))
 
@@ -331,7 +331,7 @@ class WGAN():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt, :, :, 25], cmap='gray')
+                axs[i,j].imshow(gen_imgs[cnt, :, :, 25, 0], cmap='gray')
                 axs[i,j].axis('off')
                 cnt += 1
         fig.savefig("images/hgcal_%d.png" % epoch)
