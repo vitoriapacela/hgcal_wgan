@@ -1,3 +1,9 @@
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
+import glob
+from scipy.stats import skew, kurtosis
+
 def read_h5(h5file1):
     '''
     Reads HDF5 containing the loss and returns the losses as numpy arrays.
@@ -5,6 +11,7 @@ def read_h5(h5file1):
     :type h5file1: str
     :return: 4 numpy arrays
     '''
+    #import h5py
     f = h5py.File(h5file1, "r")
     discriminator1 = np.asarray(f["discriminator"])
     discriminator_fake1 = np.asarray(f["discriminator_fake"])
@@ -54,6 +61,7 @@ def plotLossVal(loss, val_loss, title, tag=""):
     :param tag: (str) optional tag to put in the title
     :return:
     '''
+    #import h5py
     fig = plt.figure()
     plt.plot(loss[:, 0], label="train", color='blue', alpha=0.4)
     plt.plot(val_loss[:, 0], label="validation", color='red', alpha=0.4)
@@ -193,6 +201,10 @@ def getMetric(all_g_weight, gen_model):
     skews = []
     kurtoses = []
 
+    latent_space=100
+    batch_size=128
+
+    noise = np.random.normal(0, 1, (batch_size, latent_space))
     for w in glob.glob(all_g_weight):
         epoch = w.split('/')[-1].split('_')[3]
 
@@ -289,9 +301,37 @@ def plotSkew(epochs, skews):
     #plt.ylim(0, 0.5)
     #plt.savefig("stds.png")
 
+    
+def plotKurtosis(epochs, kurtoses):
+    plt.scatter(epochs, kurtoses, alpha=0.5, color='green')
+    plt.title("Fourth moment of sample generated per epoch", size=16)
+    plt.xlabel("Epoch", size=16)
+    plt.ylabel("Kurtosis", size=16)
+    #plt.xlim(-50, 1000)
+    #plt.ylim(0, 0.5)
+    #plt.savefig("stds.png")
 
+    
+def plotHistogram(real_sum, generated_sum, epoch='', bins=7):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    na, bina, _ = ax.hist(real_sum, alpha=0.3, bins=bins, label='real sum', color='blue')
+    nb, binb, _ = ax.hist(generated_sum, alpha=0.3, bins=bins, label='generated sum', color='red')
+    plt.legend(prop={'size': 15})
+    plt.title("Sum of energies - epoch " + str(epoch), size=16)
+    ax.set_xlabel('Energy (GeV)', size=16)
+    ax.set_ylabel('n events', size=16)
+    #plt.show()
+    #plt.savefig('images/pred_%s.png'%epoch)
+    return [(na, bina), (nb, binb)]
+
+    
 def plotSumHist(inp_sum, all_g_weight, gen_model):
     g = loadModel(gen_model)
+    
+    n_samples = 200
+    latent_space=100
+    noise = np.random.normal(0, 1, (n_samples, latent_space))
 
     for w in glob.glob(all_g_weight):
         epoch = w.split('/')[-1].split('_')[3]
@@ -302,7 +342,7 @@ def plotSumHist(inp_sum, all_g_weight, gen_model):
         plotHistogram(inp_sum, gen_sum, epoch, bins = 10)
 
 
-def plotX(X, generated_images, epoch=''):
+def plotX(X, generated_images, epoch='', n_samples=200):
     # Plot sum over X axis:
     x = np.arange(16)
     y_real = np.sum(X[0:n_samples-1], axis=(0, 2, 3))
@@ -316,7 +356,7 @@ def plotX(X, generated_images, epoch=''):
     plt.show()
 
 
-def plotY(X, generated_images, epoch=''):
+def plotY(X, generated_images, epoch='', n_samples=200):
     # Plot sum over Y axis:
     x = np.arange(16)
     y_real = np.sum(X[0:n_samples-1], axis=(0, 1, 3))
@@ -331,7 +371,7 @@ def plotY(X, generated_images, epoch=''):
     plt.show()
 
 
-def plotZ(X, generated_images, epoch = ''):
+def plotZ(X, generated_images, epoch = '', n_samples=200):
     # Plot sum over Z axis:
     x = np.arange(55)
     y_real = np.sum(X[0:n_samples-1], axis=(0, 1, 2))
@@ -345,8 +385,10 @@ def plotZ(X, generated_images, epoch = ''):
     plt.show()
 
 
-def plotAxes(inp, all_g_weight, gen_model):
+def plotAxes(inp, all_g_weight, gen_model, n_samples=200):
     g = loadModel(gen_model)
+    latent_space=100
+    noise = np.random.normal(0, 1, (n_samples, latent_space))
 
     for w in glob.glob(all_g_weight):
         epoch = w.split('/')[-1].split('_')[3]
