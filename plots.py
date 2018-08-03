@@ -398,3 +398,33 @@ def plotAxes(inp, all_g_weight, gen_model, n_samples=200):
         plotX(inp, generated_images, epoch)
         plotY(inp, generated_images, epoch)
         plotZ(inp, generated_images, epoch)
+        
+        
+def saveModel(model, name="gan"):
+    '''
+    Saves model as json file..
+    :parameter model: model to be saved.
+    :parameter name: name of the model to be saved.
+    :type name: str
+    :return: saved model.
+    '''
+    model_name = name
+    model.summary()
+    #model.save_weights('%s.h5' % model_name, overwrite=True)
+    model_json = model.to_json()
+    with open("%s.json" % model_name, "w") as json_file:
+        json_file.write(model_json)
+        
+        
+def saveLosses(name, discr_real, discr_fake, discr, gen):
+    '''
+    Saves true energy and prediction energy arrays into an HDF5 file.
+    :parameter name: name of the file to be saved.
+    :type name: str.
+    '''
+    new_file = h5py.File(name + "_losses.h5", 'a')
+    new_file.create_dataset("discriminator_real", data=discr_real)
+    new_file.create_dataset("discriminator_fake", data=discr_fake)
+    new_file.create_dataset("discriminator", data=discr)
+    new_file.create_dataset("generator", data=gen)
+    new_file.close()

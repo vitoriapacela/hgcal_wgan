@@ -26,3 +26,4 @@ pip install keras
 pip install matplotlib
 pip install gpustat
 pip install setGPU
+pip install ipykernel
