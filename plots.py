@@ -294,9 +294,9 @@ def plotVar(epochs, variances):
 
 def plotSkew(epochs, skews):
     plt.scatter(epochs, skews, alpha=0.5, color='green')
-    plt.title("Third moment of sample generated per epoch", size=16)
+    plt.title("Skewness", size=16)
     plt.xlabel("Epoch", size=16)
-    plt.ylabel("Skew", size=16)
+    plt.ylabel(r"$\gamma$", size=16)
     #plt.xlim(-50, 1000)
     #plt.ylim(0, 0.5)
     #plt.savefig("stds.png")
@@ -304,9 +304,9 @@ def plotSkew(epochs, skews):
     
 def plotKurtosis(epochs, kurtoses):
     plt.scatter(epochs, kurtoses, alpha=0.5, color='green')
-    plt.title("Fourth moment of sample generated per epoch", size=16)
+    plt.title("Kurtosis", size=16)
     plt.xlabel("Epoch", size=16)
-    plt.ylabel("Kurtosis", size=16)
+    plt.ylabel(r"$\kappa$", size=16)
     #plt.xlim(-50, 1000)
     #plt.ylim(0, 0.5)
     #plt.savefig("stds.png")
