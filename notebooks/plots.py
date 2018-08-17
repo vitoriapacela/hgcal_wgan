@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import glob
 from scipy.stats import skew, kurtosis
+import scipy as sp
 
 def read_h5(h5file1):
     '''
@@ -430,3 +431,26 @@ def saveLosses(name, discr_real, discr_fake, discr, gen):
     new_file.create_dataset("discriminator", data=discr)
     new_file.create_dataset("generator", data=gen)
     new_file.close()
+    
+    
+def KL(a, b):
+    a = np.asarray(a, dtype=np.float)
+    b = np.asarray(b, dtype=np.float)
+
+    a = a/np.sum(a)
+    b = b/np.sum(b)
+    
+    return np.sum(np.where(a != 0, a * np.log(a / b), 0))
+
+
+def jsd(p, q, base=np.e):
+    '''
+        Implementation of pairwise `jsd` based on  
+        https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence
+    '''
+    ## convert to np.array
+    p, q = np.asarray(p), np.asarray(q)
+    ## normalize p, q to probabilities
+    p, q = p/p.sum(), q/q.sum()
+    m = 1./2*(p + q)
+    return sp.stats.entropy(p,m, base=base)/2. +  sp.stats.entropy(q, m, base=base)/2.
