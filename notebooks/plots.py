@@ -454,3 +454,153 @@ def jsd(p, q, base=np.e):
     p, q = p/p.sum(), q/q.sum()
     m = 1./2*(p + q)
     return sp.stats.entropy(p,m, base=base)/2. +  sp.stats.entropy(q, m, base=base)/2.
+
+
+def wDist(all_g_weight, gen_model):
+    wx = []
+    wy = []
+    wz = []
+    epochs = []
+
+    for w in glob.glob(all_g_weight):
+        epoch = w.split('/')[-1].split('_')[3]
+        epoch = int(epoch)
+
+        g.load_weights(w)
+        generated_images = g.predict(noise)
+
+        gen_im_x = np.sum(generated_images, axis=(2, 3))
+        gen_im_x = np.mean(gen_im_x, axis=0)
+
+        real_img_x = np.sum(X[0:n_samples], axis=(2, 3))
+        real_img_x = np.mean(real_img_x, axis=0)
+
+        gen_im_y = np.sum(generated_images, axis=(1, 3))
+        gen_im_y = np.mean(gen_im_y, axis=0)
+
+        real_img_y = np.sum(X[0:n_samples], axis=(1, 3))
+        real_img_y = np.mean(real_img_y, axis=0)
+
+        gen_im_z = np.sum(generated_images, axis=(1, 2))
+        gen_im_z = np.mean(gen_im_z, axis=0)
+
+        real_img_z = np.sum(X[0:n_samples], axis=(1, 2))
+        real_img_z = np.mean(real_img_z, axis=0)
+        
+        real_img_x_norm = real_img_x/np.sum(real_img_x)
+        gen_img_x_norm = gen_im_x/np.sum(gen_im_x)
+        
+        real_img_y_norm = real_img_y/np.sum(real_img_y)
+        gen_img_y_norm = gen_im_y/np.sum(gen_im_y)
+        
+        real_img_z_norm = real_img_z/np.sum(real_img_z)
+        gen_img_z_norm = gen_im_z/np.sum(gen_im_z)
+
+        wx.append(wasserstein_distance(real_img_x_norm, gen_img_x_norm))
+        wy.append(wasserstein_distance(real_img_y_norm, gen_img_y_norm))
+        wz.append(wasserstein_distance(real_img_z_norm, gen_img_z_norm))
+        epochs.append(epoch)
+        
+    epoch_w = np.array([np.asarray(epochs), np.asarray(wx), np.asarray(wy), np.asarray(wz)])
+    epoch_w_sorted = (epoch_w.T)[np.argsort(epoch_w[0])]
+    return epoch_w_sorted
+
+
+def kl(all_g_weight, gen_model):
+    wx = []
+    wy = []
+    wz = []
+    epochs = []
+
+    for w in glob.glob(all_g_weight):
+        epoch = w.split('/')[-1].split('_')[3]
+        epoch = int(epoch)
+
+        g.load_weights(w)
+        generated_images = g.predict(noise)
+
+        gen_im_x = np.sum(generated_images, axis=(2, 3))
+        gen_im_x = np.mean(gen_im_x, axis=0)
+
+        real_img_x = np.sum(X[0:n_samples], axis=(2, 3))
+        real_img_x = np.mean(real_img_x, axis=0)
+
+        gen_im_y = np.sum(generated_images, axis=(1, 3))
+        gen_im_y = np.mean(gen_im_y, axis=0)
+
+        real_img_y = np.sum(X[0:n_samples], axis=(1, 3))
+        real_img_y = np.mean(real_img_y, axis=0)
+
+        gen_im_z = np.sum(generated_images, axis=(1, 2))
+        gen_im_z = np.mean(gen_im_z, axis=0)
+
+        real_img_z = np.sum(X[0:n_samples], axis=(1, 2))
+        real_img_z = np.mean(real_img_z, axis=0)
+        
+        real_img_x_norm = real_img_x/np.sum(real_img_x)
+        gen_img_x_norm = gen_im_x/np.sum(gen_im_x)
+        
+        real_img_y_norm = real_img_y/np.sum(real_img_y)
+        gen_img_y_norm = gen_im_y/np.sum(gen_im_y)
+        
+        real_img_z_norm = real_img_z/np.sum(real_img_z)
+        gen_img_z_norm = gen_im_z/np.sum(gen_im_z)
+
+        wx.append(KL(real_img_x_norm, gen_img_x_norm))
+        wy.append(KL(real_img_y_norm, gen_img_y_norm))
+        wz.append(KL(real_img_z_norm, gen_img_z_norm))
+        epochs.append(epoch)
+        
+    epoch_w = np.array([np.asarray(epochs), np.asarray(wx), np.asarray(wy), np.asarray(wz)])
+    epoch_w_sorted = (epoch_w.T)[np.argsort(epoch_w[0])]
+    return epoch_w_sorted
+
+
+def js(all_g_weight, gen_model):
+    wx = []
+    wy = []
+    wz = []
+    epochs = []
+
+    for w in glob.glob(all_g_weight):
+        epoch = w.split('/')[-1].split('_')[3]
+        epoch = int(epoch)
+
+        g.load_weights(w)
+        generated_images = g.predict(noise)
+
+        gen_im_x = np.sum(generated_images, axis=(2, 3))
+        gen_im_x = np.mean(gen_im_x, axis=0)
+
+        real_img_x = np.sum(X[0:n_samples], axis=(2, 3))
+        real_img_x = np.mean(real_img_x, axis=0)
+
+        gen_im_y = np.sum(generated_images, axis=(1, 3))
+        gen_im_y = np.mean(gen_im_y, axis=0)
+
+        real_img_y = np.sum(X[0:n_samples], axis=(1, 3))
+        real_img_y = np.mean(real_img_y, axis=0)
+
+        gen_im_z = np.sum(generated_images, axis=(1, 2))
+        gen_im_z = np.mean(gen_im_z, axis=0)
+
+        real_img_z = np.sum(X[0:n_samples], axis=(1, 2))
+        real_img_z = np.mean(real_img_z, axis=0)
+
+        real_img_x_norm = real_img_x/np.sum(real_img_x)
+        gen_img_x_norm = gen_im_x/np.sum(gen_im_x)
+        
+        real_img_y_norm = real_img_y/np.sum(real_img_y)
+        gen_img_y_norm = gen_im_y/np.sum(gen_im_y)
+        
+        real_img_z_norm = real_img_z/np.sum(real_img_z)
+        gen_img_z_norm = gen_im_z/np.sum(gen_im_z)
+
+        wx.append(jsd(real_img_x_norm, gen_img_x_norm))
+        wy.append(jsd(real_img_y_norm, gen_img_y_norm))
+        wz.append(jsd(real_img_z_norm, gen_img_z_norm))
+        epochs.append(epoch)
+        
+    epoch_w = np.array([np.asarray(epochs), np.asarray(wx), np.asarray(wy), np.asarray(wz)])
+    epoch_w_sorted = (epoch_w.T)[np.argsort(epoch_w[0])]
+    return epoch_w_sorted
