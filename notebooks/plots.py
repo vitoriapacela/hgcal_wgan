@@ -506,7 +506,7 @@ def wDist(all_g_weight, gen_model):
     return epoch_w_sorted
 
 
-def kl(all_g_weight, gen_model):
+def kls(all_g_weight, gen_model):
     wx = []
     wy = []
     wz = []
