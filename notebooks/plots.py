@@ -33,7 +33,7 @@ def plotLoss(data, title, tag=""):
     fig = plt.figure()
     plt.plot(data[:, 0])
     plt.title(tag + title + " loss", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("W loss", size=16)
     # plt.xlim(-50, 1000)
     # plt.savefig(title + "_losses.png")
@@ -67,7 +67,7 @@ def plotLossVal(loss, val_loss, title, tag=""):
     plt.plot(loss[:, 0], label="train", color='blue', alpha=0.4)
     plt.plot(val_loss[:, 0], label="validation", color='red', alpha=0.4)
     plt.title(tag + title + " loss", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("W loss", size=16)
     plt.legend(prop={'size': 15})
     # plt.xlim(-50, 1000)
@@ -96,7 +96,7 @@ def plotLoss2(loss1, loss2, title, tag=""):
     plt.plot(loss1[:, 0], label="first", color='blue', alpha=0.4)
     plt.plot(loss2[:, 0], label="current", color='red', alpha=0.4)
     plt.title(tag + title + " loss", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("W loss", size=16)
     plt.legend(prop={'size': 15})
     plt.xlim(-50, 2000)
@@ -121,7 +121,7 @@ def plotLoss3(loss1, loss2, loss3, title, tag=""):
     plt.plot(loss2[:, 0], label="bs=32, lr=0.005", color='red', alpha=0.4)
     plt.plot(loss3[:, 0], label="bs=128, lr=0.00005", color='green', alpha=0.4)
     plt.title(tag + title + " loss", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("W loss", size=16)
     plt.legend(prop={'size': 15})
     plt.xlim(-50, 1000)
@@ -146,7 +146,7 @@ def plotRealFake(real, fake, title, tag=""):
     plt.plot(real[:, 0], label="real", color='blue', alpha=0.5)
     plt.plot(fake[:, 0], label="fake", color='red', alpha=0.5)
     plt.title(tag + title + " loss", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("W loss", size=16)
     plt.legend(prop={'size': 15})
     # plt.savefig(title + "_losses_real_fake.png")
@@ -238,7 +238,7 @@ def sortMeans(epochs, means):
 def plotMean(epoch_mean_sorted):
     plt.scatter(epoch_mean_sorted[:,0], epoch_mean_sorted[:,1], alpha=0.6, color='blue')
     plt.title("Mean energy generated", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("$\mu$ (GeV)", size=16)
     #plt.xlim(-50, 1000)
     ## ACTIVATE YLIM
@@ -251,7 +251,7 @@ def plotMeans(epoch_mean_sorted1, epoch_mean_sorted2):
     plt.scatter(epoch_mean_sorted1[:,0], epoch_mean_sorted1[:,1], label="first")
     plt.scatter(epoch_mean_sorted2[:,0], epoch_mean_sorted2[:,1], label="second")
     plt.title("Mean energy generated", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("$\mu$ (GeV)", size=16)
     plt.xlim(-50, 1000)
     #plt.ylim(0, 1.5)
@@ -264,7 +264,7 @@ def plotMeans(epoch_mean_sorted1, epoch_mean_sorted2):
 def plotStd(epochs, stds):
     plt.scatter(epochs, stds, alpha=0.5, color='green')
     plt.title("Standard deviation of energy generated", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("$\sigma$ (GeV)", size=16)
     #plt.xlim(-50, 1000)
     plt.ylim(0, 0.5)
@@ -275,7 +275,7 @@ def plotStds(epochs1, stds1, epochs2, stds2):
     plt.scatter(epochs1, stds1, label="first")
     plt.scatter(epochs2, stds2, label="second")
     plt.title("Standard deviation of energy generated", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("$\sigma$ (GeV)", size=16)
     plt.xlim(-50, 1000)
     #plt.ylim(0, 1)
@@ -286,7 +286,7 @@ def plotStds(epochs1, stds1, epochs2, stds2):
 def plotVar(epochs, variances):
     plt.scatter(epochs, variances, alpha=0.5, color='green')
     plt.title("Variance of sample generated per epoch", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel("Var", size=16)
     #plt.xlim(-50, 1000)
     #plt.ylim(0, 0.5)
@@ -296,7 +296,7 @@ def plotVar(epochs, variances):
 def plotSkew(epochs, skews):
     plt.scatter(epochs, skews, alpha=0.5, color='green')
     plt.title("Skewness", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel(r"$\gamma$", size=16)
     #plt.xlim(-50, 1000)
     #plt.ylim(0, 0.5)
@@ -306,7 +306,7 @@ def plotSkew(epochs, skews):
 def plotKurtosis(epochs, kurtoses):
     plt.scatter(epochs, kurtoses, alpha=0.5, color='green')
     plt.title("Kurtosis", size=16)
-    plt.xlabel("Epoch", size=16)
+    plt.xlabel("Step", size=16)
     plt.ylabel(r"$\kappa$", size=16)
     #plt.xlim(-50, 1000)
     #plt.ylim(0, 0.5)
@@ -319,7 +319,7 @@ def plotHistogram(real_sum, generated_sum, epoch='', bins=7):
     na, bina, _ = ax.hist(real_sum, alpha=0.3, bins=bins, label='real sum', color='blue')
     nb, binb, _ = ax.hist(generated_sum, alpha=0.3, bins=bins, label='generated sum', color='red')
     plt.legend(prop={'size': 15})
-    plt.title("Sum of energies - epoch " + str(epoch), size=16)
+    plt.title("Sum of energies, step " + str(epoch), size=16)
     ax.set_xlabel('Energy (GeV)', size=16)
     ax.set_ylabel('n events', size=16)
     #plt.show()
@@ -327,6 +327,11 @@ def plotHistogram(real_sum, generated_sum, epoch='', bins=7):
     return [(na, bina), (nb, binb)]
 
     
+def sortByStep(e):
+    step = int(e.split('/')[-1].split('_')[3])
+    return step
+
+
 def plotSumHist(inp_sum, all_g_weight, gen_model):
     g = loadModel(gen_model)
     
@@ -334,13 +339,16 @@ def plotSumHist(inp_sum, all_g_weight, gen_model):
     latent_space=100
     noise = np.random.normal(0, 1, (n_samples, latent_space))
 
-    for w in glob.glob(all_g_weight):
-        epoch = w.split('/')[-1].split('_')[3]
+    weight_files = glob.glob(all_g_weight)
+    weight_files.sort(key=sortByStep)
+    
+    for w in weight_files:
+        step = w.split('/')[-1].split('_')[3]
         g.load_weights(w)
         generated_images = g.predict(noise)
         generated_images = generated_images.squeeze()
         gen_sum = np.sum(generated_images, axis=(1, 2, 3))
-        plotHistogram(inp_sum, gen_sum, epoch, bins = 20)
+        plotHistogram(inp_sum, gen_sum, step, bins = 20)
 
 
 def plotX(X, generated_images, epoch='', n_samples=200):
