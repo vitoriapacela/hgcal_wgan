@@ -17,5 +17,5 @@ WGANsfor HGCAL data at CMS.
 ## Structure
 * `env` contains scripts to set up the environment at SF's GPUs.
 * `preprocessing` contains tools to preprocess ROOT files and convert them to HDF5.
-* `gans` contains GAN implementations for training. The best so far is `wgan_conv2d.py`.
+* `gans` contains GAN implementations for training. The best so far is `wgan_conv2d_regression.py`.
 * `notebooks` contains Jupyter Notebooks used for evaluation.
