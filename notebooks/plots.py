@@ -22,7 +22,7 @@ def read_h5(h5file1):
     return discriminator1, discriminator_fake1, discriminator_real1, generator1
 
 
-def plotLoss(data, title, tag=""):
+def plotLoss(data, title="", tag=""):
     '''
     Plots individual loss (eg. either generator or discriminator).
     :param data: loss data as numpy array
@@ -34,10 +34,10 @@ def plotLoss(data, title, tag=""):
     plt.plot(data[:, 0])
     plt.title(tag + title + " loss", size=16)
     plt.xlabel("Step", size=16)
-    plt.ylabel("W loss", size=16)
+    plt.ylabel("Total loss", size=16)
     # plt.xlim(-50, 1000)
     # plt.savefig(title + "_losses.png")
-
+    
 
 def losses(h5file):
     '''
@@ -73,6 +73,40 @@ def plotLossVal(loss, val_loss, title, tag=""):
     # plt.xlim(-50, 1000)
     # plt.savefig(title + "_losses_val.png")
     plt.show()
+    
+    
+def plotWassLoss(data, title="", tag=""):
+    '''
+    Plots individual loss (eg. either generator or discriminator).
+    :param data: loss data as numpy array
+    :param title: (str) title of the plot
+    :param tag: (str) optional tag to put in the title
+    :return:
+    '''
+    fig = plt.figure()
+    plt.plot(data[:, 1])
+    plt.title(tag + title + " loss", size=16)
+    plt.xlabel("Step", size=16)
+    plt.ylabel("W loss", size=16)
+    # plt.xlim(-50, 1000)
+    # plt.savefig(title + "_losses.png")
+    
+    
+def plotEnergyLoss(data, title="", tag=""):
+    '''
+    Plots individual loss (eg. either generator or discriminator).
+    :param data: loss data as numpy array
+    :param title: (str) title of the plot
+    :param tag: (str) optional tag to put in the title
+    :return:
+    '''
+    fig = plt.figure()
+    plt.plot(data[:, 2])
+    plt.title(tag + title + " loss", size=16)
+    plt.xlabel("Step", size=16)
+    plt.ylabel("MSE", size=16)
+    # plt.xlim(-50, 1000)
+    # plt.savefig(title + "_losses.png")
 
 
 def lossesVal(h5file, h5file_val):
@@ -319,7 +353,7 @@ def plotHistogram(real_sum, generated_sum, epoch='', bins=7):
     na, bina, _ = ax.hist(real_sum, alpha=0.3, bins=bins, label='real sum', color='blue')
     nb, binb, _ = ax.hist(generated_sum, alpha=0.3, bins=bins, label='generated sum', color='red')
     plt.legend(prop={'size': 15})
-    plt.title("Sum of energies, step " + str(epoch), size=16)
+    plt.title("Total energy, step " + str(epoch), size=16)
     ax.set_xlabel('Energy (GeV)', size=16)
     ax.set_ylabel('n events', size=16)
     #plt.show()
@@ -351,7 +385,7 @@ def plotSumHist(inp_sum, all_g_weight, gen_model):
         plotHistogram(inp_sum, gen_sum, step, bins = 20)
 
 
-def plotX(X, generated_images, epoch='', n_samples=200):
+def plotX(X, generated_images, step='', n_samples=200):
     # Plot sum over X axis:
     x = np.arange(16)
     y_real = np.sum(X[0:n_samples-1], axis=(0, 2, 3))
@@ -361,12 +395,12 @@ def plotX(X, generated_images, epoch='', n_samples=200):
     plt.xlabel("Position over the x axis", size=16)
     plt.ylabel("Energy sum (GeV)", size=16)
     #plt.title("x axis", size=16)
-    plt.title("Energy x axis, epoch " + str(epoch), size=16)
+    plt.title("Energy x axis, step " + str(step), size=16)
     plt.legend()
     plt.show()
 
 
-def plotY(X, generated_images, epoch='', n_samples=200):
+def plotY(X, generated_images, step='', n_samples=200):
     # Plot sum over Y axis:
     x = np.arange(16)
     y_real = np.sum(X[0:n_samples-1], axis=(0, 1, 3))
@@ -376,12 +410,12 @@ def plotY(X, generated_images, epoch='', n_samples=200):
     plt.xlabel("Position over the y axis", size=16)
     plt.ylabel("Energy sum (GeV)", size=16)
     #plt.title("y axis", size=16)
-    plt.title("Energy y axis, epoch " + str(epoch), size=16)
+    plt.title("Energy y axis, step " + str(step), size=16)
     plt.legend()
     plt.show()
 
 
-def plotZ(X, generated_images, epoch = '', n_samples=200):
+def plotZ(X, generated_images, step = '', n_samples=200):
     # Plot sum over Z axis:
     x = np.arange(55)
     y_real = np.sum(X[0:n_samples-1], axis=(0, 1, 2))
@@ -391,7 +425,7 @@ def plotZ(X, generated_images, epoch = '', n_samples=200):
     plt.xlabel("Position over the z axis", size=16)
     plt.ylabel("Energy sum (GeV)", size=16)
     #plt.title("z axis", size=16)
-    plt.title("Energy z axis, epoch " + str(epoch), size=16)
+    plt.title("Energy z axis, step " + str(step), size=16)
     plt.legend()
     plt.show()
 
@@ -400,15 +434,18 @@ def plotAxes(inp, all_g_weight, gen_model, n_samples=200):
     g = loadModel(gen_model)
     latent_space=100
     noise = np.random.normal(0, 1, (n_samples, latent_space))
-
-    for w in glob.glob(all_g_weight):
-        epoch = w.split('/')[-1].split('_')[3]
+    
+    weight_files = glob.glob(all_g_weight)
+    weight_files.sort(key=sortByStep)
+    
+    for w in weight_files:
+        step = w.split('/')[-1].split('_')[3]
         g.load_weights(w)
         generated_images = g.predict(noise)
 
-        plotX(inp, generated_images, epoch)
-        plotY(inp, generated_images, epoch)
-        plotZ(inp, generated_images, epoch)
+        plotX(inp, generated_images, step)
+        plotY(inp, generated_images, step)
+        plotZ(inp, generated_images, step)
         
         
 def saveModel(model, name="gan"):

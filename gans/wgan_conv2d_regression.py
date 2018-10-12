@@ -83,7 +83,7 @@ class WGAN():
 
         # Build and compile the critic
         self.critic = self.build_critic()
-        self.critic.compile(loss=[self.wasserstein_loss, 'mean_squared_error'], loss_weights=[1, 0.2],
+        self.critic.compile(loss=[self.wasserstein_loss, 'mean_squared_error'], loss_weights=[1, 0.03],
             optimizer=optimizer,
             metrics=['accuracy'])
         saveModel(self.critic, "weights/discriminator_model_" + self.tag)
@@ -104,7 +104,7 @@ class WGAN():
 
         # The combined model  (stacked generator and critic)
         self.combined = Model(input=z, output=[valid, energy])
-        self.combined.compile(loss=[self.wasserstein_loss, 'mean_squared_error'], loss_weights=[1, 0.2],
+        self.combined.compile(loss=[self.wasserstein_loss, 'mean_squared_error'], loss_weights=[1, 0.03],
             optimizer=optimizer,
             metrics=['accuracy'])
         saveModel(self.combined, "weights/combined_model_" + self.tag)
@@ -214,13 +214,11 @@ class WGAN():
 
         # Load the training dataset
         #f = h5py.File('/bigdata/shared/HGCAL_data/new/all_noPU.h5', 'r')
-        f = h5py.File('/mnt/ceph/users/vbarinpa/single_particle/all_noPU.h5', 'r')
-        X_train = np.asarray(f['image'])
+        f = h5py.File('/mnt/ceph/users/vbarinpa/single_particle/all_noPU_features.h5', 'r')
+        X_train = np.asarray(f['X'])
         #X_train = X_train[:, :, :, :, 0]
-        y = np.asarray(f['true_energy'])
+        y = np.asarray(f['norm_energy'])
 
-        # Rescale train -1 to 1
-        #X_train = (X - np.mean(X))/np.mean(X)
 
         # Shuffle
         np.random.shuffle(X_train)
@@ -247,9 +245,9 @@ class WGAN():
         d_loss_fakes = []
         d_losses = []
         
-        val_d_loss_reals = []
-        val_d_loss_fakes = []
-        val_d_losses = []
+#        val_d_loss_reals = []
+#        val_d_loss_fakes = []
+#        val_d_losses = []
         
         g_losses = []
         
@@ -273,7 +271,7 @@ class WGAN():
                 
                 # Sample noise as generator input
                 noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
-                sampled_energies = np.random.normal(0, 600, (batch_size, 1))
+                sampled_energies = np.random.normal(0, 1, (batch_size, 1))
                 generator_input = np.multiply(sampled_energies, noise)
 
                 # Generate a batch of new images
@@ -283,6 +281,14 @@ class WGAN():
                 d_loss_real = self.critic.train_on_batch(imgs, [valid, true_en])
                 d_loss_fake = self.critic.train_on_batch(gen_imgs, [fake, sampled_energies[:, 0]])
                 d_loss = 0.5 * np.add(d_loss_fake, d_loss_real)
+                
+                #print(d_loss)
+                #print(self.critic.metrics_names)
+                
+                #print("d_loss_real")
+                #print(d_loss_real)
+                #print("d_loss_fake")
+                #print(d_loss_fake)
                 
                 # Validation critic
 #                 if (self.validate):
@@ -309,10 +315,15 @@ class WGAN():
             # ---------------------
 
             g_loss = self.combined.train_on_batch(noise, [valid, true_en])
+            
+            #print("g_loss")
+            #print(self.combined.metrics_names)
+            #print(g_loss)
+            
             g_losses.append(g_loss)
             
             # Print the progress
-            print ("%d [D loss: %f] [G loss: %f]" % (step, 1 - d_loss[0], 1 - g_loss[0]))
+            print ("step %d \n [D loss: %f] [D Wass loss: %f] [D energy regression loss: %f] \n [G loss: %f] [G Wass loss: %f] [G energy loss: %f]" % (step, 1 - d_loss[0], 1 - d_loss[1], d_loss[2], 1 - g_loss[0], 1 - g_loss[1], 1 - g_loss[2]))
 
             # If at save interval => save generated image samples and weights
             if step % sample_interval == 0:
