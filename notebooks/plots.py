@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
-from scipy.stats import skew, kurtosis
+from scipy.stats import skew, kurtosis, wasserstein_distance
 import scipy as sp
 
 def read_h5(h5file1):
@@ -501,7 +501,23 @@ def jsd(p, q, base=np.e):
     return sp.stats.entropy(p,m, base=base)/2. +  sp.stats.entropy(q, m, base=base)/2.
 
 
-def wDist(all_g_weight, gen_model):
+def getDists(all_g_weight, gen_model, file_name, latent_space=100, n_samples = 2000):
+    f = h5py.File(file_name, 'r')
+    X = np.asarray(f['image'])
+    np.random.shuffle(X)
+    
+    g = loadModel(gen_model)
+    noise = np.random.normal(0, 1, (n_samples, latent_space))
+    X_n = X[0:n_samples]
+    
+    w_dists = wDist(all_g_weight, g, X_n, noise)
+    kl_divs = kls(all_g_weight, g, X_n, noise)
+    js_divs = js(all_g_weight, g, X_n, noise)
+    
+    return w_dists, kl_divs, js_divs
+
+
+def wDist(all_g_weight, g, X_n, noise):
     wx = []
     wy = []
     wz = []
@@ -517,19 +533,19 @@ def wDist(all_g_weight, gen_model):
         gen_im_x = np.sum(generated_images, axis=(2, 3))
         gen_im_x = np.mean(gen_im_x, axis=0)
 
-        real_img_x = np.sum(X[0:n_samples], axis=(2, 3))
+        real_img_x = np.sum(X_n, axis=(2, 3))
         real_img_x = np.mean(real_img_x, axis=0)
 
         gen_im_y = np.sum(generated_images, axis=(1, 3))
         gen_im_y = np.mean(gen_im_y, axis=0)
 
-        real_img_y = np.sum(X[0:n_samples], axis=(1, 3))
+        real_img_y = np.sum(X_n, axis=(1, 3))
         real_img_y = np.mean(real_img_y, axis=0)
 
         gen_im_z = np.sum(generated_images, axis=(1, 2))
         gen_im_z = np.mean(gen_im_z, axis=0)
 
-        real_img_z = np.sum(X[0:n_samples], axis=(1, 2))
+        real_img_z = np.sum(X_n, axis=(1, 2))
         real_img_z = np.mean(real_img_z, axis=0)
         
         real_img_x_norm = real_img_x/np.sum(real_img_x)
@@ -551,7 +567,7 @@ def wDist(all_g_weight, gen_model):
     return epoch_w_sorted
 
 
-def kls(all_g_weight, gen_model):
+def kls(all_g_weight, g, X_n, noise):
     wx = []
     wy = []
     wz = []
@@ -567,19 +583,19 @@ def kls(all_g_weight, gen_model):
         gen_im_x = np.sum(generated_images, axis=(2, 3))
         gen_im_x = np.mean(gen_im_x, axis=0)
 
-        real_img_x = np.sum(X[0:n_samples], axis=(2, 3))
+        real_img_x = np.sum(X_n, axis=(2, 3))
         real_img_x = np.mean(real_img_x, axis=0)
 
         gen_im_y = np.sum(generated_images, axis=(1, 3))
         gen_im_y = np.mean(gen_im_y, axis=0)
 
-        real_img_y = np.sum(X[0:n_samples], axis=(1, 3))
+        real_img_y = np.sum(X_n, axis=(1, 3))
         real_img_y = np.mean(real_img_y, axis=0)
 
         gen_im_z = np.sum(generated_images, axis=(1, 2))
         gen_im_z = np.mean(gen_im_z, axis=0)
 
-        real_img_z = np.sum(X[0:n_samples], axis=(1, 2))
+        real_img_z = np.sum(X_n, axis=(1, 2))
         real_img_z = np.mean(real_img_z, axis=0)
         
         real_img_x_norm = real_img_x/np.sum(real_img_x)
@@ -601,7 +617,7 @@ def kls(all_g_weight, gen_model):
     return epoch_w_sorted
 
 
-def js(all_g_weight, gen_model):
+def js(all_g_weight, g, X_n, noise):
     wx = []
     wy = []
     wz = []
@@ -617,19 +633,19 @@ def js(all_g_weight, gen_model):
         gen_im_x = np.sum(generated_images, axis=(2, 3))
         gen_im_x = np.mean(gen_im_x, axis=0)
 
-        real_img_x = np.sum(X[0:n_samples], axis=(2, 3))
+        real_img_x = np.sum(X_n, axis=(2, 3))
         real_img_x = np.mean(real_img_x, axis=0)
 
         gen_im_y = np.sum(generated_images, axis=(1, 3))
         gen_im_y = np.mean(gen_im_y, axis=0)
 
-        real_img_y = np.sum(X[0:n_samples], axis=(1, 3))
+        real_img_y = np.sum(X_n, axis=(1, 3))
         real_img_y = np.mean(real_img_y, axis=0)
 
         gen_im_z = np.sum(generated_images, axis=(1, 2))
         gen_im_z = np.mean(gen_im_z, axis=0)
 
-        real_img_z = np.sum(X[0:n_samples], axis=(1, 2))
+        real_img_z = np.sum(X_n, axis=(1, 2))
         real_img_z = np.mean(real_img_z, axis=0)
 
         real_img_x_norm = real_img_x/np.sum(real_img_x)
@@ -649,3 +665,42 @@ def js(all_g_weight, gen_model):
     epoch_w = np.array([np.asarray(epochs), np.asarray(wx), np.asarray(wy), np.asarray(wz)])
     epoch_w_sorted = (epoch_w.T)[np.argsort(epoch_w[0])]
     return epoch_w_sorted
+
+
+def plotDists(w_dist, kls, jss):
+    plt.figure(figsize=(6, 6))
+
+    plt.errorbar(w_dist[:, 0], np.mean(w_dist[:, [1, 2, 3]], axis=1), yerr=np.std(w_dist[:, [1, 2, 3]], axis=1)/np.sqrt(len(w_dist[:, 1])), color='orange', alpha = 0.3, fmt='o', label='WD')
+    plt.errorbar(kls[:, 0], np.mean(kls[:, [1, 2, 3]], axis=1), yerr=np.std(kls[:, [1, 2, 3]], axis=1)/np.sqrt(len(kls[:, 1])), color='red', alpha = 0.3, fmt='o', label='KL')
+    plt.errorbar(jss[:, 0], np.mean(jss[:, [1, 2, 3]], axis=1), yerr=np.std(jss[:, [1, 2, 3]], axis=1)/np.sqrt(len(jss[:, 1])), alpha = 0.3, fmt='o', color = 'blue', label='JS')
+
+    plt.xlabel("Steps", size=16)
+    plt.ylabel(r"$\mu_{div}$", size=16)
+    plt.legend(prop={'size': 16})
+    plt.yscale('log')
+    
+    
+def plot_wdist_xyz(w_dist):
+    plt.figure(figsize=(6, 6))
+
+    plt.scatter(w_dist[:, 0], w_dist[:, 1], color='red', alpha=0.3, label='x')
+    plt.scatter(w_dist[:, 0], w_dist[:, 2], color='blue', alpha=0.3, label='y')
+    plt.scatter(w_dist[:, 0], w_dist[:, 3], color='green', alpha=0.3, label='z')
+
+    plt.xlabel("Steps", size=16)
+    plt.ylabel("Wasserstein distance", size=16)
+    plt.legend(prop={'size': 16})
+    plt.yscale('log')
+    
+    
+def compare_avg_wDist(w_dist1, w_dist2):
+    plt.figure(figsize=(6, 6))
+
+    plt.errorbar(w_dist1[:, 0], np.mean(w_dist1[:, [1, 2, 3]], axis=1), yerr=np.std(w_dist1[:, [1, 2, 3]], axis=1)/np.sqrt(len(w_dist1[:, 1])), color='orange', alpha = 0.3, fmt='o', label='w/ reg')
+    plt.errorbar(w_dist2[:, 0], np.mean(w_dist2[:, [1, 2, 3]], axis=1), yerr=np.std(w_dist2[:, [1, 2, 3]], axis=1)/np.sqrt(len(w_dist2[:, 1])), color='green', alpha = 0.3, fmt='o', label='w/o reg')
+
+    plt.xlabel("Steps", size=16)
+    plt.ylabel(r"$\mu_{div}$", size=16)
+    plt.legend(prop={'size': 16})
+    plt.yscale('log')
+    plt.xlim(0, 4000)
