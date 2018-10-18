@@ -27,3 +27,4 @@ pip install matplotlib
 pip install gpustat
 pip install setGPU
 pip install ipykernel
+pip install opencv-python

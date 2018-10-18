@@ -357,7 +357,7 @@ def plotHistogram(real_sum, generated_sum, epoch='', bins=7):
     ax.set_xlabel('Energy (GeV)', size=16)
     ax.set_ylabel('n events', size=16)
     #plt.show()
-    #plt.savefig('images/pred_%s.png'%epoch)
+    plt.savefig('images_sum/pred_%s.png'%epoch)
     return [(na, bina), (nb, binb)]
 
     
