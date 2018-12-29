@@ -5,11 +5,12 @@ import h5py
 import numpy as np
 import os
 
+# folder to save the output files
 FOLDER_NAME = "gamma/"
 
 def convert(f1):
     '''
-    Converts data to images, only for the electrons in the dataset.
+    Converts data to images, only for a certain particle (e.g. electrons, photons) in the dataset.
     :param f1: root file name
     :type f1: str
     :return: images, true_energy, and isPileup arrays
@@ -20,7 +21,7 @@ def convert(f1):
     A = root_numpy.root2array(f1, treename='B4;1', branches=branches)
     
     # get indexes
-    isGamma = np.where(A['isGamma']==1)
+    isGamma = np.where(A['isGamma'] == 1)
 
     # select only electrons
     A = A[isGamma]
