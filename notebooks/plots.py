@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import glob
 from scipy.stats import skew, kurtosis, wasserstein_distance
 import scipy as sp
+from matplotlib.colors import LogNorm, Normalize
 
 def read_h5(h5file1):
     '''
@@ -357,7 +358,7 @@ def plotHistogram(real_sum, generated_sum, epoch='', bins=7):
     ax.set_xlabel('Energy (GeV)', size=16)
     ax.set_ylabel('n events', size=16)
     #plt.show()
-    plt.savefig('images_sum/pred_%s.png'%epoch)
+    #plt.savefig('images_sum/pred_%s.png'%epoch)
     return [(na, bina), (nb, binb)]
 
     
@@ -703,4 +704,82 @@ def compare_avg_wDist(w_dist1, w_dist2):
     plt.ylabel(r"$\mu_{div}$", size=16)
     plt.legend(prop={'size': 16})
     plt.yscale('log')
-    plt.xlim(0, 4000)
+    #plt.xlim(0, 4000)
+    
+    
+def weigh_hist_x(X, dim_size=10, log=False, color='purple'):
+    '''
+    Plots a histogram of the energy respective to the calorimeter cell id.
+    '''
+    xx = np.arange(dim_size)
+    xx = np.tile(xx, dim_size)
+    # Array xx has n x n entries for the 100 cells in the x-y projection, n = 10. The entries are in the range (0, 9).
+    
+    X_red = np.sum(X, axis=(3))
+    X_red = np.mean(X_red, axis=0)
+    X_red = X_red.reshape(dim_size**2)
+    # Array X_red has the energy for each cell in the xx array.
+    
+    # Then we plot a weighted histogram, in which X_red are the weights for the cells in xx.
+    # plt.hist does not accept matrixes, hence the arrays were flattened.
+    plt.hist(xx, dim_size, weights=X_red, log=log, color=color)
+    plt.xlabel('x', size=16)
+    plt.ylabel('Total energy (GeV)', size=16)
+    plt.title('Energy in x-axis projection', size=16)
+    
+    
+def weigh_hist_y(X, dim_size=10, log=False, color='purple'):
+    xx = np.arange(dim_size)
+    xx = np.tile(xx, dim_size)
+    # Array xx has n x n entries for the 100 cells in the x-y projection, n = 10. The entries are in the range (0, 9).
+    
+    X_red = np.sum(X, axis=(3))
+    X_red = np.mean(X_red, axis=0)
+    X_red = X_red.reshape(dim_size**2)
+    # Array X_red has the energy for each cell in the xx array.
+    
+    # Then we plot a weighted histogram, in which X_red are the weights for the cells in xx.
+    # plt.hist does not accept matrixes, hence the arrays were flattened.
+    plt.hist(xx, dim_size, weights=X_red.T, log=log, color=color)
+    plt.xlabel('y', size=16)
+    plt.ylabel('Total energy (GeV)', size=16)
+    plt.title('Energy in y-axis projection', size=16)
+    
+    
+def weigh_hist_z(X, dim_size=30, log=False, color='purple'):
+    xx = np.arange(dim_size)
+    xx = np.tile(xx, 10)
+    # Array xx has 30 x 10 entries for the 300 cells in the x-z projection. The entries are in the range (0, 29).
+    
+    X_red = np.sum(X, axis=(2))
+    X_red = np.mean(X_red, axis=0)
+    X_red = X_red.flatten()
+    # Array X_red has the energy for each cell in the xx array.
+    
+    # Then we plot a weighted histogram, in which X_red are the weights for the cells in xx.
+    # plt.hist does not accept matrixes, hence the arrays were flattened.
+    plt.hist(xx, dim_size, weights=X_red, log=log, color=color)
+    plt.xlabel('z', size=16)
+    plt.ylabel('Total energy (GeV)', size=16)
+    plt.title('Energy in z-axis projection', size=16)
+    
+    
+def plt2d(X):
+    X_red = np.sum(X, axis=(3))
+    X_red = np.mean(X_red, axis=0)
+    plt.imshow(X_red.T, origin = 'lower')
+    plt.colorbar()
+    plt.title("Total energy (GeV) in x-y projection", size=16)
+    plt.xlabel('x', size=16)
+    plt.ylabel('y', size=16)
+    
+    
+def plt2d_log(X):    
+    X_red = np.sum(X, axis=(3))
+    X_red = np.mean(X_red, axis=0)
+    
+    plt.imshow(X_red.T, origin = 'lower', norm=LogNorm(vmin=0.01, vmax=1))
+    plt.colorbar()
+    plt.title("Total energy (GeV) in x-y projection", size=16)
+    plt.xlabel('x', size=16)
+    plt.ylabel('y', size=16)
