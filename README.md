@@ -2,6 +2,9 @@
 
 WGANs for HGCAL data at CMS.
 
+Project developed during my summer working at CERN's Openlab with Dr. Maurizio Pierini.
+The report is available [here](https://zenodo.org/record/1470512).
+
 
 ## Dependencies:
 * [`NumPy`](http://www.numpy.org/)
