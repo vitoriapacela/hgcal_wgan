@@ -3,7 +3,7 @@
 WGANs for HGCAL data at CMS.
 
 
-## Depencencies:
+## Dependencies:
 * [`NumPy`](http://www.numpy.org/)
 * [`matplotlib`](https://matplotlib.org/)
 * [`h5py`](http://www.h5py.org/)
