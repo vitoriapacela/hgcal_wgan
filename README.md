@@ -1,6 +1,6 @@
 # hgcal_wgan
 
-WGANsfor HGCAL data at CMS.
+WGANs for HGCAL data at CMS.
 
 
 ## Depencencies:
