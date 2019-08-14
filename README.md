@@ -3,6 +3,7 @@
 WGANs for HGCAL data at CMS.
 
 Project developed during my summer working at CERN's Openlab with Dr. Maurizio Pierini.
+
 Most of the work is documented in my [report](https://zenodo.org/record/1470512) (although it misses some updates).
 
 
